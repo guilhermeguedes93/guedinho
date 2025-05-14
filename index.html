@@ -2,26 +2,149 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Teste de Mudanças</title>
+  <title>Autocomplete Profissão</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 2em;
-      background-color: #f0f0f0;
+      background-color: #2d3742;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 40px;
+      color: #cde5e5;
     }
-    h1 {
-      color: #333;
-    }
-    p {
-      background: white;
-      padding: 1em;
+
+    .form-container {
+      background-color: #3a4652;
+      padding: 20px;
       border-radius: 8px;
+      width: 400px;
+      border: 1px solid #4b5a65;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 16px;
+      color: #77e0db;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      background-color: transparent;
+      border: none;
+      border-bottom: 2px solid #4be5d3;
+      color: #ffffff;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .autocomplete-suggestions {
+      background-color: #3a4652;
+      border: 1px solid #4be5d3;
+      max-height: 150px;
+      overflow-y: auto;
+      position: absolute;
+      width: 360px;
+      z-index: 10;
+    }
+
+    .autocomplete-suggestion {
+      padding: 10px;
+      cursor: pointer;
+      color: #ffffff;
+    }
+
+    .autocomplete-suggestion:hover {
+      background-color: #4be5d3;
+      color: #2d3742;
+    }
+
+    .erro-msg {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #f28779;
+      background-color: rgba(255, 0, 0, 0.05);
+      border-left: 3px solid #f28779;
+      padding: 8px 12px;
+      border-radius: 4px;
+      display: none;
     }
   </style>
 </head>
 <body>
-  <h1>Monitoramento de Mudança de Página</h1>
-  <p>Versão inicial - 04/05/2025 aqui mudou</p>
+
+<div class="form-container">
+  <label for="profissao">Qual sua profissão? *</label>
+  <input type="text" id="profissao" placeholder="Digite aqui..." autocomplete="off" />
+  <div id="sugestoes" class="autocomplete-suggestions"></div>
+  <div id="erro-profissao" class="erro-msg">⚠ Profissão inválida. Por favor, selecione uma das opções da lista ou digite ao menos 3 letras.</div>
+</div>
+
+<script>
+  const profissoes = [
+    "Administrador", "Advogado", "Agricultor", "Analista de Sistemas", "Antropólogo", "Arquiteto",
+    "Arquivista", "Artesão", "Assistente Social", "Astrônomo", "Ator", "Auditor", "Auxiliar Administrativo",
+    "Biólogo", "Bombeiro", "Cabeleireiro", "Caixa", "Caminhoneiro", "Carpinteiro", "Chef de Cozinha",
+    "Cientista de Dados", "Cirurgião", "Coach", "Comerciante", "Contador", "Corretor de Imóveis", "Cozinheiro",
+    "Dentista", "Desenhista", "Designer Gráfico", "Designer de Interiores", "Digitador", "Economista",
+    "Educador Físico", "Eletricista", "Enfermeiro", "Engenheiro", "Esteticista", "Estudante", "Farmacêutico",
+    "Faxineiro", "Fisioterapeuta", "Fotógrafo", "Fonoaudiólogo", "Funcionário Público", "Garçom", "Geógrafo",
+    "Geólogo", "Gerente", "Jornalista", "Juiz", "Lixeiro", "Maquinista", "Marceneiro", "Marinheiro", "Mecânico",
+    "Médico", "Metalúrgico", "Microempresário", "Militar", "Músico", "Nutricionista", "Operador de Máquinas",
+    "Padeiro", "Pedagogo", "Pedreiro", "Perito Criminal", "Personal Trainer", "Pesquisador", "Pintor", "Policial",
+    "Porteiro", "Professor", "Programador", "Psicólogo", "Publicitário", "Químico", "Recepcionista",
+    "Representante Comercial", "Secretária", "Segurança", "Servente", "Sociólogo", "Soldador", "Supervisor",
+    "Taxista", "Técnico de Enfermagem", "Técnico em Informática", "Terapeuta Ocupacional", "Tradutor",
+    "Vendedor", "Veterinário", "Zelador"
+  ];
+
+  const input = document.getElementById('profissao');
+  const sugestoesDiv = document.getElementById('sugestoes');
+  const erro = document.getElementById('erro-profissao');
+
+  input.addEventListener('input', () => {
+    const valor = input.value.toLowerCase();
+    sugestoesDiv.innerHTML = '';
+    erro.style.display = 'none';
+
+    if (valor.length === 0) return;
+
+    const filtradas = profissoes.filter(p =>
+      p.toLowerCase().includes(valor)
+    );
+
+    filtradas.forEach(p => {
+      const div = document.createElement('div');
+      div.textContent = p;
+      div.classList.add('autocomplete-suggestion');
+      div.onclick = () => {
+        input.value = p;
+        sugestoesDiv.innerHTML = '';
+        erro.style.display = 'none';
+      };
+      sugestoesDiv.appendChild(div);
+    });
+  });
+
+  input.addEventListener('blur', () => {
+    setTimeout(() => {
+      const valor = input.value.trim().toLowerCase();
+      const validoNaLista = profissoes.some(p => p.toLowerCase() === valor);
+      const validoPorDigitos = valor.length >= 3;
+
+      if (validoNaLista || validoPorDigitos) {
+        erro.style.display = 'none';
+      } else {
+        erro.style.display = 'block';
+      }
+    }, 150);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!sugestoesDiv.contains(e.target) && e.target !== input) {
+      sugestoesDiv.innerHTML = '';
+    }
+  });
+</script>
+
 </body>
 </html>
